@@ -1,0 +1,14 @@
+.impar {
+  border: 1px green solid;
+}
+
+.par {
+  border: 1px solid red;
+}
+
+.hobbies {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  margin: 0 auto;
+}
