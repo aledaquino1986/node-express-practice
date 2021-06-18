@@ -1,3 +1,10 @@
+let fs = require("fs");
+let bcrypt = require("bcrypt");
+
+let archivoUsuarios = fs.readFileSync("usuarios.json", {
+  encoding: "utf-8"
+});
+
 const userControllers = {
   register: (req, res) => {
     res.render("register");
@@ -8,7 +15,7 @@ const userControllers = {
   },
 
   list: (req, res) => {
-    let users = ["Dario", "Javier", "Mary", "Ale", "beto", "japeño"];
+    let users = JSON.parse(archivoUsuarios);
 
     res.render("list", {
       users: users
@@ -17,46 +24,82 @@ const userControllers = {
 
   search: (req, res) => {
     let loQueBuscoElUsuario = req.query.search.toLowerCase();
-    let users = ["Dario", "Javier", "Mary", "Ale", "beto", "japeño"];
-
+    let users = JSON.parse(archivoUsuarios);
     let usersResults = [];
 
     const userResults = users.filter(user =>
-      user.toLowerCase().includes(loQueBuscoElUsuario)
+      user.name.toLowerCase().includes(loQueBuscoElUsuario)
     );
+
     res.render("userResults", {
       users: userResults
     });
   },
 
-  create: (req, res) => {
-    let { name, edad, email } = req.body;
+  create: (req, res, next) => {
+    let { name, edad, email, password } = req.body;
+    let { filename } = req.files[0];
+    console.log(filename);
 
-    let usuario = {
-      name,
-      edad,
-      email
-    };
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+      let usuario = {
+        name,
+        edad,
+        email,
+        hashedPassword,
+        avatar: filename
+      };
 
-    //Guardarla
+      //Guardarla
 
-    res.redirect("/users/list");
+      //Leer que cosas ya había.
+
+      let usuarios;
+
+      if (archivoUsuarios === "") {
+        usuarios = [];
+      } else {
+        usuarios = JSON.parse(archivoUsuarios);
+      }
+
+      usuarios.push(usuario);
+
+      let usuariosJSON = JSON.stringify(usuarios);
+      fs.writeFile("usuarios.json", usuariosJSON, err => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.redirect("/users/list");
+        }
+      });
+    });
   },
 
   edit: (req, res) => {
     let idUser = req.params.idUser;
-    let users = [
-      { id: 1, name: "Dario" },
-      { id: 2, name: "Beto" },
-      { id: 3, name: "Japeño" },
-      { id: 4, name: "Ale" },
-      { id: 5, name: "Bernie" },
-      { id: 6, name: "Luisa" }
-    ];
+    let users = JSON.parse(archivoUsuarios);
 
     let userToEdit = users[idUser];
     res.render("userEdit", {
       userToEdit: userToEdit
+    });
+  },
+
+  processLogin: (req, res) => {
+    const { email, password } = req.body;
+
+    let usuarios = JSON.parse(archivoUsuarios);
+
+    const usuario = usuarios.find(usuario => {
+      if (usuario.email === email) {
+        bcrypt.compare(password, usuario.hashedPassword, (err, isMatch) => {
+          isMatch
+            ? res.send("Estas logueado!")
+            : res.send("Password y contraseña no coinciden");
+        });
+      } else {
+        res.send("No esta registrado el mail");
+      }
     });
   }
 };
