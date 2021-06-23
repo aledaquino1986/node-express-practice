@@ -1,6 +1,6 @@
 let fs = require("fs");
 let bcrypt = require("bcrypt");
-
+let {check, validationResult, body} = require("express-validator")
 let archivoUsuarios = fs.readFileSync("usuarios.json", {
   encoding: "utf-8"
 });
@@ -37,9 +37,13 @@ const userControllers = {
   },
 
   create: (req, res, next) => {
-    let { name, edad, email, password } = req.body;
-    let { filename } = req.files[0];
-    console.log(filename);
+    let errors = validationResult(req)
+    console.log(errors)
+
+    if (errors.isEmpty()) {
+let { name, edad, email, password } = req.body;
+    let  filename  = req.files[0] === undefined ? undefined : req.files[0].filename
+   
 
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       let usuario = {
@@ -73,6 +77,10 @@ const userControllers = {
         }
       });
     });
+    } else {
+     res.render("register", {errors: errors.errors})
+    }
+    
   },
 
   edit: (req, res) => {

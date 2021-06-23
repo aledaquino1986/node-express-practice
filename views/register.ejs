@@ -13,29 +13,42 @@
 <body>
   <% include partials/header.ejs %>
     <h1>Register</h1>
-    <form method="POST" action="/users/register" enctype="multipart/form-data">
-      <label for="name">
-        Nombre
-        <input type="text" name="name" id="name">
-      </label>
-      <br>
-      <label for="">Edad</label>
-      <input type="text" name="edad" id="edad">
-      <br>
-      <label for="email">email</label>
-      <input type="email" id="email" name="email">
-      <br>
-      <label for="password">password</label>
-      <input type="password" id="password" name="password">
-      <br>
-      <label for="avatar">File</label>
-      <input type="file" id="avatar" name="avatar">
-      <br>
-      <input type="submit" value="Registrar">
+
+    <% if(typeof errors !=="undefined" ) { %>
+      <p style="color:red">Hay error</p>
+
+      <ul>
+        <% for (let i=0; i < errors.length; i++) { %>
+          <li>
+            <%=errors[i].msg%>
+          </li>
+          <% } %>
+      </ul>
+      <% } %>
+
+        <form method="POST" action="/users/register" enctype="multipart/form-data">
+          <label for="name">
+            Nombre
+            <input type="text" name="name" id="name">
+          </label>
+          <br>
+          <label for="">Edad</label>
+          <input type="number" name="edad" id="edad">
+          <br>
+          <label for="email">email</label>
+          <input type="email" id="email" name="email">
+          <br>
+          <label for="password">password</label>
+          <input type="password" id="password" name="password">
+          <br>
+          <label for="avatar">File</label>
+          <input type="file" id="avatar" name="avatar">
+          <br>
+          <input type="submit" value="Registrar">
 
 
 
-    </form>
+        </form>
 </body>
 
 </html>
